@@ -1,8 +1,9 @@
 import csv
 
-
-from text_preprocessing import build_clean_corpus
-import dataset_analysis
+from .preprocessing import build_clean_corpus
+    with open(path, encoding="utf-8") as f:
+        reader = csv.DictReader(f)
+        rows = list(reader)
 
 try:
     from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer

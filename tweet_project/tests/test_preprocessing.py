@@ -5,8 +5,8 @@ import unittest
 import os, sys
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
-import text_preprocessing
-from text_preprocessing import (
+from src import preprocessing as text_preprocessing
+from src.preprocessing import (
     tokenize,
     build_clean_corpus,
     token_statistics,
@@ -14,7 +14,7 @@ from text_preprocessing import (
     clean_text,
 )
 
-DATA_PATH = 'train (1).csv'
+DATA_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data', 'tweets.csv')
 
 class TestPreprocessing(unittest.TestCase):
     @classmethod

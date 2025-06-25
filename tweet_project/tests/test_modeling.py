@@ -4,8 +4,8 @@ import unittest
 
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
-
-class TestClassification(unittest.TestCase):
+from src.modeling import (
+DATA_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data', 'tweets.csv')
     def test_train_evaluate_metrics(self):
         metrics = train_evaluate(DATA_PATH)
         self.assertIn('accuracy', metrics)
