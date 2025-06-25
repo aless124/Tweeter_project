@@ -1,5 +1,5 @@
 import csv
-from typing import Dict, List
+from typing import Dict, List, Tuple
 
 from text_preprocessing import build_clean_corpus
 import dataset_analysis
@@ -11,10 +11,12 @@ try:
     from sklearn.pipeline import Pipeline
     from sklearn.model_selection import train_test_split, cross_val_score
     from sklearn.metrics import accuracy_score, precision_recall_fscore_support
-except Exception as e:  # pragma: no cover - if packages missing
+    SKLEARN_AVAILABLE = True
+except Exception:  # pragma: no cover - if packages missing
     TfidfVectorizer = CountVectorizer = LogisticRegression = LinearSVC = None
     Pipeline = train_test_split = cross_val_score = None
     accuracy_score = precision_recall_fscore_support = None
+    SKLEARN_AVAILABLE = False
 
 try:
     import numpy as np
@@ -33,6 +35,8 @@ def load_texts_targets(path: str) -> tuple[list[str], list[int]]:
 
 
 def build_vectorizer(name: str):
+    if not SKLEARN_AVAILABLE:
+        raise ImportError("scikit-learn is required for vectorizers")
     if name == "tfidf":
         return TfidfVectorizer()
     if name == "count":
@@ -41,6 +45,8 @@ def build_vectorizer(name: str):
 
 
 def build_classifier(name: str):
+    if not SKLEARN_AVAILABLE:
+        raise ImportError("scikit-learn is required for classifiers")
     if name == "logreg":
         return LogisticRegression(max_iter=1000)
     if name == "svm":
@@ -55,7 +61,7 @@ def train_evaluate(
     model: str = "logreg",
     test_size: float = 0.2,
     random_state: int = 42,
-) -> Dict[str, float]:
+    ) -> Dict[str, float]:
     """Train a text classification pipeline and evaluate it."""
     texts, y = load_texts_targets(path)
     clean_texts = build_clean_corpus(texts, stem_words=False)
@@ -74,6 +80,30 @@ def train_evaluate(
         y_test, y_pred, average="binary"
     )
     return {"accuracy": acc, "precision": prec, "recall": rec, "f1": f1}
+
+
+def train_predict(
+    path: str,
+    *,
+    vectorizer: str = "tfidf",
+    model: str = "logreg",
+    test_size: float = 0.2,
+    random_state: int = 42,
+) -> Tuple[List[int], List[int]]:
+    """Train a pipeline and return predictions and truth labels."""
+    texts, y = load_texts_targets(path)
+    clean_texts = build_clean_corpus(texts, stem_words=False)
+
+    vec = build_vectorizer(vectorizer)
+    clf = build_classifier(model)
+
+    X = vec.fit_transform(clean_texts)
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=test_size, random_state=random_state
+    )
+    clf.fit(X_train, y_train)
+    y_pred = clf.predict(X_test)
+    return list(y_pred), list(y_test)
 
 
 def cross_validate(
@@ -111,6 +141,8 @@ if Word2Vec is not None and np is not None:
 
 __all__ = [
     "train_evaluate",
+    "train_predict",
     "cross_validate",
     "word2vec_features",
+    "SKLEARN_AVAILABLE",
 ]
