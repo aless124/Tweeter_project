@@ -4,9 +4,6 @@ import unittest
 
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
-from classification_pipeline import train_evaluate, cross_validate
-
-DATA_PATH = 'train (1).csv'
 
 class TestClassification(unittest.TestCase):
     def test_train_evaluate_metrics(self):
@@ -20,6 +17,7 @@ class TestClassification(unittest.TestCase):
         score = cross_validate(DATA_PATH, vectorizer='count', model='svm', cv=3)
         self.assertGreaterEqual(score, 0.0)
         self.assertLessEqual(score, 1.0)
+
 
 if __name__ == '__main__':
     unittest.main()

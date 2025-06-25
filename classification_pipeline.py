@@ -1,5 +1,5 @@
 import csv
-from typing import Dict, List
+
 
 from text_preprocessing import build_clean_corpus
 import dataset_analysis
@@ -11,10 +11,7 @@ try:
     from sklearn.pipeline import Pipeline
     from sklearn.model_selection import train_test_split, cross_val_score
     from sklearn.metrics import accuracy_score, precision_recall_fscore_support
-except Exception as e:  # pragma: no cover - if packages missing
-    TfidfVectorizer = CountVectorizer = LogisticRegression = LinearSVC = None
-    Pipeline = train_test_split = cross_val_score = None
-    accuracy_score = precision_recall_fscore_support = None
+
 
 try:
     import numpy as np
@@ -33,6 +30,7 @@ def load_texts_targets(path: str) -> tuple[list[str], list[int]]:
 
 
 def build_vectorizer(name: str):
+
     if name == "tfidf":
         return TfidfVectorizer()
     if name == "count":
@@ -41,6 +39,7 @@ def build_vectorizer(name: str):
 
 
 def build_classifier(name: str):
+
     if name == "logreg":
         return LogisticRegression(max_iter=1000)
     if name == "svm":
@@ -55,7 +54,7 @@ def train_evaluate(
     model: str = "logreg",
     test_size: float = 0.2,
     random_state: int = 42,
-) -> Dict[str, float]:
+
     """Train a text classification pipeline and evaluate it."""
     texts, y = load_texts_targets(path)
     clean_texts = build_clean_corpus(texts, stem_words=False)
@@ -74,6 +73,7 @@ def train_evaluate(
         y_test, y_pred, average="binary"
     )
     return {"accuracy": acc, "precision": prec, "recall": rec, "f1": f1}
+
 
 
 def cross_validate(
@@ -111,6 +111,5 @@ if Word2Vec is not None and np is not None:
 
 __all__ = [
     "train_evaluate",
-    "cross_validate",
-    "word2vec_features",
+
 ]
