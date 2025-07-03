@@ -11,7 +11,7 @@ try:
     from sklearn.model_selection import train_test_split, cross_val_score
     from sklearn.metrics import accuracy_score, precision_recall_fscore_support
     SKLEARN_AVAILABLE = True
-except Exception:  # pragma: no cover - if packages missing
+except Exception:  # pragma: no cover - si les packages sont manquants
     TfidfVectorizer = CountVectorizer = LogisticRegression = LinearSVC = None
     Pipeline = train_test_split = cross_val_score = None
     accuracy_score = precision_recall_fscore_support = None
@@ -26,7 +26,7 @@ except Exception:
 
 
 def load_texts_targets(path: str) -> tuple[list[str], list[int]]:
-    """Load dataset and return texts and integer targets."""
+    """Charge le jeu de données et retourne les textes et les cibles entières."""
     with open(path, encoding="utf-8") as f:
         reader = csv.DictReader(f)
         rows = list(reader)
@@ -37,22 +37,22 @@ def load_texts_targets(path: str) -> tuple[list[str], list[int]]:
 
 def build_vectorizer(name: str):
     if not SKLEARN_AVAILABLE:
-        raise ImportError("scikit-learn is required for vectorizers")
+        raise ImportError("scikit-learn est requis pour les vectoriseurs")
     if name == "tfidf":
         return TfidfVectorizer()
     if name == "count":
         return CountVectorizer()
-    raise ValueError("unknown vectorizer type")
+    raise ValueError("type de vectoriseur inconnu")
 
 
 def build_classifier(name: str):
     if not SKLEARN_AVAILABLE:
-        raise ImportError("scikit-learn is required for classifiers")
+        raise ImportError("scikit-learn est requis pour les classificateurs")
     if name == "logreg":
         return LogisticRegression(max_iter=1000)
     if name == "svm":
         return LinearSVC()
-    raise ValueError("unknown model type")
+    raise ValueError("type de modèle inconnu")
 
 
 def train_evaluate(
@@ -63,7 +63,7 @@ def train_evaluate(
     test_size: float = 0.2,
     random_state: int = 42,
     ) -> Dict[str, float]:
-    """Train a text classification pipeline and evaluate it."""
+    """Entraîne un pipeline de classification de texte et l'évalue."""
     texts, y = load_texts_targets(path)
     clean_texts = build_clean_corpus(texts, stem_words=False)
 
@@ -91,7 +91,7 @@ def train_predict(
     test_size: float = 0.2,
     random_state: int = 42,
 ) -> Tuple[List[int], List[int]]:
-    """Train a pipeline and return predictions and truth labels."""
+    """Entraîne un pipeline et retourne les prédictions et les vraies étiquettes."""
     texts, y = load_texts_targets(path)
     clean_texts = build_clean_corpus(texts, stem_words=False)
 
@@ -114,7 +114,7 @@ def cross_validate(
     model: str = "logreg",
     cv: int = 5,
 ) -> float:
-    """Perform cross validation and return mean accuracy."""
+    """Effectue une validation croisée et retourne la précision moyenne."""
     texts, y = load_texts_targets(path)
     clean_texts = build_clean_corpus(texts, stem_words=False)
 
@@ -127,17 +127,22 @@ def cross_validate(
 
 if Word2Vec is not None and np is not None:
 
-    def word2vec_features(texts: List[str], vector_size: int = 100) -> np.ndarray:
+    def word2vec_features(texts: List[str], vector_size: int = 100):
+        """Génère des caractéristiques Word2Vec en moyennant les vecteurs de mots."""
         tokenized = [t.split() for t in build_clean_corpus(texts, stem_words=False)]
         model = Word2Vec(tokenized, vector_size=vector_size, window=5, min_count=1, workers=1)
 
-        def avg(tokens: List[str]) -> np.ndarray:
+        def avg(tokens: List[str]):
             vecs = [model.wv[w] for w in tokens if w in model.wv]
             if not vecs:
                 return np.zeros(vector_size)
             return np.mean(vecs, axis=0)
 
         return np.vstack([avg(tk) for tk in tokenized])
+else:
+    def word2vec_features(texts: List[str], vector_size: int = 100) -> None:
+        """Fonction factice quand Word2Vec n'est pas disponible."""
+        raise ImportError("gensim et numpy sont requis pour word2vec_features")
 
 
 __all__ = [
